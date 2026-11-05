@@ -30,14 +30,28 @@
   }
   header h1 { color: #4a3f8c; font-size: 1.8rem; }
   header p { color: #777; font-size: 0.9rem; margin-top: 4px; }
+  .company-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .company-logo {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 8px;
+  }
+  .company-info {
+    display: flex;
+    flex-direction: column;
+  }
   .company-name {
-    font-size: 0.85rem;
-    color: #667eea;
-    font-weight: 700;
+    font-size: 1.1rem;
+    color: #0033A0;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-bottom: 5px;
-    display: block;
+    margin-bottom: 3px;
   }
   .stats { display: flex; gap: 12px; flex-wrap: wrap; }
   .stat-card {
@@ -209,6 +223,14 @@
     form { grid-template-columns: 1fr 1fr; }
     form button { grid-column: 1 / -1; }
     th, td { padding: 8px; font-size: 0.85rem; }
+    .company-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .company-logo {
+      width: 60px;
+      height: 60px;
+    }
   }
 </style>
 </head>
@@ -217,9 +239,14 @@
 
   <header>
     <div>
-      <span class="company-name">Your Company Name</span>
-      <h1>📅 Weekly Task Tracker</h1>
-      <p>Virtual Assistant Task Manager • Synced with Google Sheets</p>
+      <div class="company-header">
+        <img src="nassit-logo.png" alt="NASSIT Logo" class="company-logo" />
+        <div class="company-info">
+          <span class="company-name">NASSIT</span>
+          <h1>📅 Weekly Task Tracker</h1>
+          <p>Virtual Assistant Task Manager • Synced with Google Sheets</p>
+        </div>
+      </div>
     </div>
     <div class="stats">
       <div class="stat-card"><h3 id="statTotal">0</h3><span>Total</span></div>
