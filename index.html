@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Weekly Task Tracker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #333;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  header {
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  header h1 { color: #4a3f8c; font-size: 1.8rem; }
+  header p { color: #777; font-size: 0.9rem; margin-top: 4px; }
+  .stats { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat-card {
+    background: #f5f3ff;
+    padding: 10px 18px;
+    border-radius: 10px;
+    text-align: center;
+    min-width: 90px;
+    border-left: 4px solid #667eea;
+  }
+  .stat-card h3 { font-size: 1.4rem; color: #4a3f8c; }
+  .stat-card span { font-size: 0.75rem; color: #666; text-transform: uppercase; }
+
+  .panel {
+    background: #fff;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    margin-bottom: 20px;
+  }
+  .panel h2 { color: #4a3f8c; margin-bottom: 15px; font-size: 1.2rem; }
+
+  form {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+  .field label {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #667eea;
+  }
+  button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    height: 42px;
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(102,126,234,0.4); }
+  button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+  }
+  .filters select { width: auto; min-width: 140px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  thead {
+    background: #f5f3ff;
+  }
+  th, td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+    font-size: 0.92rem;
+  }
+  th { color: #4a3f8c; font-weight: 700; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+  tbody tr:hover { background: #fafaff; }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .priority-high { background: #fee2e2; color: #b91c1c; }
+  .priority-medium { background: #fef3c7; color: #b45309; }
+  .priority-low { background: #d1fae5; color: #047857; }
+
+  .status-pending { background: #e5e7eb; color: #374151; }
+  .status-progress { background: #dbeafe; color: #1e40af; }
+  .status-done { background: #d1fae5; color: #047857; }
+
+  .actions { display: flex; gap: 6px; }
+  .icon-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    height: auto;
+    color: #555;
+  }
+  .icon-btn:hover { background: #f0f0f0; transform: none; box-shadow: none; }
+  .icon-btn.delete:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+
+  .empty {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-style: italic;
+  }
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 22px;
+    border-radius: 8px;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.3s;
+    z-index: 1000;
+  }
+  .toast.show { opacity: 1; transform: translateX(0); }
+  .toast.success { background: #10b981; }
+  .toast.error { background: #ef4444; }
+  .toast.info { background: #3b82f6; }
+
+  .loader {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 800px) {
+    form { grid-template-columns: 1fr 1fr; }
+    form button { grid-column: 1 / -1; }
+    th, td { padding: 8px; font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div>
+      <h1>📅 Weekly Task Tracker</h1>
+      <p>Virtual Assistant Task Manager • Synced with Google Sheets</p>
+    </div>
+    <div class="stats">
+      <div class="stat-card"><h3 id="statTotal">0</h3><span>Total</span></div>
+      <div class="stat-card"><h3 id="statPending">0</h3><span>Pending</span></div>
+      <div class="stat-card"><h3 id="statProgress">0</h3><span>In Progress</span></div>
+      <div class="stat-card"><h3 id="statDone">0</h3><span>Done</span></div>
+    </div>
+  </header>
+
+  <div class="panel">
+    <h2>➕ Add New Task</h2>
+    <form id="taskForm">
+      <div class="field">
+        <label>Task</label>
+        <input type="text" id="task" placeholder="e.g. Reply to client emails" required />
+      </div>
+      <div class="field">
+        <label>Priority</label>
+        <select id="priority" required>
+          <option value="High">High</option>
+          <option value="Medium" selected>Medium</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Deadline</label>
+        <input type="date" id="deadline" required />
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="status" required>
+          <option value="Pending" selected>Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Done">Done</option>
+        </select>
+      </div>
+      <button type="submit" id="submitBtn">Add Task</button>
+    </form>
+  </div>
+
+  <div class="panel">
+    <h2>📋 Task List</h2>
+    <div class="filters">
+      <select id="filterStatus">
+        <option value="all">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Done">Done</option>
+      </select>
+      <select id="filterPriority">
+        <option value="all">All Priorities</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <select id="filterWeek">
+        <option value="all">All Weeks</option>
+        <option value="current" selected>This Week</option>
+        <option value="next">Next Week</option>
+        <option value="past">Past Tasks</option>
+      </select>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>Priority</th>
+          <th>Deadline</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="taskTable">
+        <tr><td colspan="5" class="empty">Loading tasks...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG: Replace this URL with YOUR Google Apps Script Web App URL
+   (see setup instructions below the code)
+============================================================ */
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
+
+let allTasks = [];
+
+// ---------- Toast ----------
+function toast(msg, type = "info") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.className = "toast show " + type;
+  setTimeout(() => t.className = "toast", 2800);
+}
+
+// ---------- Date helpers ----------
+function getWeekRange(offset = 0) {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1) + offset * 7;
+  const start = new Date(now.setDate(diff));
+  start.setHours(0,0,0,0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 6);
+  end.setHours(23,59,59,999);
+  return { start, end };
+}
+
+function formatDate(d) {
+  if (!d) return "";
+  const date = new Date(d);
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// ---------- Load tasks ----------
+async function loadTasks() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL + "?action=get");
+    const data = await res.json();
+    if (data.success) {
+      allTasks = data.data || [];
+      renderTasks();
+    } else {
+      throw new Error(data.error || "Failed to load");
+    }
+  } catch (err) {
+    document.getElementById("taskTable").innerHTML =
+      `<tr><td colspan="5" class="empty">⚠️ Could not connect to Google Sheets.<br>
+      <small>Check that APPS_SCRIPT_URL is set correctly and the script is deployed.</small></td></tr>`;
+    console.error(err);
+  }
+}
+
+// ---------- Render ----------
+function renderTasks() {
+  const tbody = document.getElementById("taskTable");
+  const statusF = document.getElementById("filterStatus").value;
+  const prioF = document.getElementById("filterPriority").value;
+  const weekF = document.getElementById("filterWeek").value;
+
+  let filtered = allTasks.filter(t => {
+    if (statusF !== "all" && t.status !== statusF) return false;
+    if (prioF !== "all" && t.priority !== prioF) return false;
+    if (weekF !== "all" && t.deadline) {
+      const d = new Date(t.deadline);
+      const today = new Date(); today.setHours(0,0,0,0);
+      const current = getWeekRange(0);
+      const next = getWeekRange(1);
+      if (weekF === "current" && (d < current.start || d > current.end)) return false;
+      if (weekF === "next" && (d < next.start || d > next.end)) return false;
+      if (weekF === "past" && d >= today) return false;
+    }
+    return true;
+  });
+
+  // Stats (always full list)
+  document.getElementById("statTotal").textContent = allTasks.length;
+  document.getElementById("statPending").textContent = allTasks.filter(t => t.status === "Pending").length;
+  document.getElementById("statProgress").textContent = allTasks.filter(t => t.status === "In Progress").length;
+  document.getElementById("statDone").textContent = allTasks.filter(t => t.status === "Done").length;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty">No tasks match your filters.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(t => `
+    <tr data-id="${t.id}">
+      <td><strong>${escapeHtml(t.task)}</strong></td>
+      <td><span class="badge priority-${t.priority.toLowerCase()}">${t.priority}</span></td>
+      <td>${formatDate(t.deadline)}</td>
+      <td>
+        <select class="status-select" onchange="updateStatus('${t.id}', this.value)"
+                style="padding:5px 8px; font-size:0.85rem; border-radius:6px;">
+          <option ${t.status==='Pending'?'selected':''}>Pending</option>
+          <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${t.status==='Done'?'selected':''}>Done</option>
+        </select>
+      </td>
+      <td class="actions">
+        <button class="icon-btn delete" onclick="deleteTask('${t.id}')">🗑 Delete</button>
+      </td>
+    </tr>
+  `).join("");
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ---------- Add task ----------
+document.getElementById("taskForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const btn = document.getElementById("submitBtn");
+  const payload = {
+    action: "add",
+    task: document.getElementById("task").value.trim(),
+    priority: document.getElementById("priority").value,
+    deadline: document.getElementById("deadline").value,
+    status: document.getElementById("status").value
+  };
+  if (!payload.task) return toast("Task name is required", "error");
+  if (!payload.deadline) return toast("Deadline is required", "error");
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="loader"></span>Adding...';
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast("✅ Task added successfully!", "success");
+      e.target.reset();
+      document.getElementById("deadline").value = new Date().toISOString().split('T')[0];
+      await loadTasks();
+    } else throw new Error(data.error);
+  } catch (err) {
+    toast("❌ " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Add Task";
+  }
+});
+
+// ---------- Update status ----------
+async function updateStatus(id, newStatus) {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "update", id, status: newStatus })
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast("Status updated", "success");
+      await loadTasks();
+    } else throw new Error(data.error);
+  } catch (err) {
+    toast("❌ " + err.message, "error");
+    loadTasks();
+  }
+}
+
+// ---------- Delete task ----------
+async function deleteTask(id) {
+  if (!confirm("Delete this task?")) return;
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "delete", id })
+    });
+    const data = await res.json();
+    if (data.success) {
+      toast("🗑 Task deleted", "success");
+      await loadTasks();
+    } else throw new Error(data.error);
+  } catch (err) {
+    toast("❌ " + err.message, "error");
+  }
+}
+
+// ---------- Filters ----------
+["filterStatus","filterPriority","filterWeek"].forEach(id => {
+  document.getElementById(id).addEventListener("change", renderTasks);
+});
+
+// ---------- Init ----------
+document.getElementById("deadline").value = new Date().toISOString().split('T')[0];
+loadTasks();
+</script>
+</body>
+</html>
