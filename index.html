@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
 <title>Weekly Task Tracker</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -15,7 +15,8 @@
     display: flex;
     flex-direction: column;
   }
-  .container { max-width: 1100px; margin: 0 auto; flex: 1; }
+  .container { max-width: 1100px; margin: 0 auto; flex: 1; width: 100%; }
+  
   header {
     background: #fff;
     padding: 25px 30px;
@@ -30,6 +31,7 @@
   }
   header h1 { color: #4a3f8c; font-size: 1.8rem; }
   header p { color: #777; font-size: 0.9rem; margin-top: 4px; }
+  
   .company-header {
     display: flex;
     align-items: center;
@@ -53,6 +55,7 @@
     letter-spacing: 1px;
     margin-bottom: 3px;
   }
+  
   .stats { display: flex; gap: 12px; flex-wrap: wrap; }
   .stat-card {
     background: #f5f3ff;
@@ -61,6 +64,7 @@
     text-align: center;
     min-width: 90px;
     border-left: 4px solid #667eea;
+    flex: 1;
   }
   .stat-card h3 { font-size: 1.4rem; color: #4a3f8c; }
   .stat-card span { font-size: 0.75rem; color: #666; text-transform: uppercase; }
@@ -95,6 +99,7 @@
     border-radius: 8px;
     font-size: 0.95rem;
     transition: border 0.2s;
+    -webkit-appearance: none;
   }
   input:focus, select:focus {
     outline: none;
@@ -110,6 +115,7 @@
     cursor: pointer;
     transition: transform 0.15s, box-shadow 0.15s;
     height: 42px;
+    font-size: 0.95rem;
   }
   button:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(102,126,234,0.4); }
   button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
@@ -122,10 +128,17 @@
   }
   .filters select { width: auto; min-width: 140px; }
 
+  /* Responsive Table Wrapper */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+    border: 1px solid #eee;
+  }
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
+    min-width: 600px; /* Ensures table doesn't squish on small screens */
   }
   thead {
     background: #f5f3ff;
@@ -146,6 +159,7 @@
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
+    white-space: nowrap;
   }
   .priority-high { background: #fee2e2; color: #b91c1c; }
   .priority-medium { background: #fef3c7; color: #b45309; }
@@ -159,12 +173,13 @@
   .icon-btn {
     background: transparent;
     border: 1px solid #ddd;
-    padding: 5px 10px;
+    padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 0.85rem;
     height: auto;
     color: #555;
+    white-space: nowrap;
   }
   .icon-btn:hover { background: #f0f0f0; transform: none; box-shadow: none; }
   .icon-btn.delete:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
@@ -188,6 +203,8 @@
     transform: translateX(100%);
     transition: all 0.3s;
     z-index: 1000;
+    max-width: 90vw;
+    word-wrap: break-word;
   }
   .toast.show { opacity: 1; transform: translateX(0); }
   .toast.success { background: #10b981; }
@@ -219,18 +236,82 @@
     font-weight: 600;
   }
 
-  @media (max-width: 800px) {
-    form { grid-template-columns: 1fr 1fr; }
-    form button { grid-column: 1 / -1; }
-    th, td { padding: 8px; font-size: 0.85rem; }
-    .company-header {
-      flex-direction: column;
-      align-items: flex-start;
+  /* =========================================
+     MOBILE RESPONSIVE OPTIMIZATIONS
+     ========================================= */
+  @media (max-width: 768px) {
+    body { padding: 10px; }
+    
+    header { 
+      padding: 15px; 
+      flex-direction: column; 
+      align-items: stretch; 
+      text-align: center;
     }
-    .company-logo {
-      width: 60px;
-      height: 60px;
+    
+    .company-header { 
+      flex-direction: column; 
+      align-items: center; 
+      gap: 10px; 
     }
+    
+    .company-logo { width: 60px; height: 60px; }
+    .company-name { font-size: 1rem; text-align: center; }
+    header h1 { font-size: 1.4rem; text-align: center; }
+    header p { text-align: center; }
+    
+    .stats { 
+      justify-content: center; 
+      margin-top: 10px; 
+    }
+    .stat-card { 
+      min-width: 70px; 
+      padding: 8px 5px; 
+    }
+    .stat-card h3 { font-size: 1.2rem; }
+    .stat-card span { font-size: 0.65rem; }
+
+    .panel { padding: 15px; }
+    
+    /* Stack form fields on mobile for easy tapping */
+    form { 
+      grid-template-columns: 1fr; 
+      gap: 12px; 
+    }
+    form button { 
+      grid-column: 1 / -1; 
+      width: 100%;
+    }
+
+    /* Stack filters on mobile */
+    .filters { 
+      flex-direction: column; 
+    }
+    .filters select { 
+      width: 100%; 
+      min-width: unset; 
+    }
+
+    th, td { 
+      padding: 10px 12px; 
+      font-size: 0.85rem; 
+    }
+    
+    .actions { 
+      flex-direction: column; 
+      gap: 6px; 
+    }
+    .icon-btn { 
+      width: 100%; 
+      text-align: center; 
+      padding: 8px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .company-name { font-size: 0.9rem; }
+    header h1 { font-size: 1.2rem; }
+    .stat-card h3 { font-size: 1.1rem; }
   }
 </style>
 </head>
@@ -309,20 +390,24 @@
         <option value="past">Past Tasks</option>
       </select>
     </div>
-    <table>
-      <thead>
-        <tr>
-          <th>Task</th>
-          <th>Priority</th>
-          <th>Deadline</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="taskTable">
-        <tr><td colspan="5" class="empty">Loading tasks...</td></tr>
-      </tbody>
-    </table>
+    
+    <!-- Added responsive wrapper for mobile table scrolling -->
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Deadline</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskTable">
+          <tr><td colspan="5" class="empty">Loading tasks...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -430,7 +515,7 @@ function renderTasks() {
       <td>${formatDate(t.deadline)}</td>
       <td>
         <select class="status-select" onchange="updateStatus('${t.id}', this.value)"
-                style="padding:5px 8px; font-size:0.85rem; border-radius:6px;">
+                style="padding:5px 8px; font-size:0.85rem; border-radius:6px; width: 100%; min-width: 110px;">
           <option ${t.status==='Pending'?'selected':''}>Pending</option>
           <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
           <option ${t.status==='Done'?'selected':''}>Done</option>
